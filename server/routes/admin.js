@@ -155,11 +155,42 @@ router.get('/subjects', async (req, res) => {
   res.json(result);
 });
 
-// Delete subject
+// Delete subject (cascade: answers -> results -> questions -> subject)
 router.delete('/subjects/:id', async (req, res) => {
-  await supabase.from('questions').delete().eq('subject_id', req.params.id);
-  const { error } = await supabase.from('subjects').delete().eq('id', req.params.id);
+  const subjectId = req.params.id;
+
+  // Get all question IDs for this subject
+  const { data: qs } = await supabase
+    .from('questions')
+    .select('id')
+    .eq('subject_id', subjectId);
+  const questionIds = (qs || []).map(q => q.id);
+
+  // Get all result IDs for this subject
+  const { data: rs } = await supabase
+    .from('results')
+    .select('id')
+    .eq('subject_id', subjectId);
+  const resultIds = (rs || []).map(r => r.id);
+
+  // Delete answers linked to those results or questions
+  if (resultIds.length > 0) {
+    await supabase.from('answers').delete().in('result_id', resultIds);
+  }
+
+  // Delete results for this subject
+  await supabase.from('results').delete().eq('subject_id', subjectId);
+
+  // Delete user_progress for this subject
+  await supabase.from('user_progress').delete().eq('subject_id', subjectId);
+
+  // Delete questions
+  await supabase.from('questions').delete().eq('subject_id', subjectId);
+
+  // Delete subject
+  const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
   if (error) return res.status(500).json({ error: error.message });
+
   res.json({ success: true });
 });
 

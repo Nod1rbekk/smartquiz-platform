@@ -9,10 +9,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Refresh user stats from server
+    if (user?.phone) {
+      api.post('/auth/login', { phone: user.phone }).then(r => {
+        localStorage.setItem('smartquiz_user', JSON.stringify(r.data.user));
+      }).catch(() => {});
+    }
     api.get('/classes').then(r => {
       setClasses(r.data);
       setLoading(false);
     });
+  // eslint-disable-next-line
   }, []);
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;

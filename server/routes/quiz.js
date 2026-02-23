@@ -21,8 +21,8 @@ router.get('/questions/:subject_id', async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
 
-  // Shuffle questions, limit to 10
-  const questions = shuffle([...data]).slice(0, 10);
+  // Shuffle all questions (no limit)
+  const questions = shuffle([...data]);
 
   // For each question, shuffle options and track new correct_index
   const result = questions.map(q => {

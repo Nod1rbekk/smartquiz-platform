@@ -120,11 +120,19 @@ export default function AdminPage() {
     if (file) handleFile(file);
   };
 
+  const [deleteError, setDeleteError] = useState(null);
+
   const handleDelete = async (id) => {
-    await api.delete(`/admin/subjects/${id}`);
-    setDeleteConfirm(null);
-    loadSubjects();
-    loadStats();
+    try {
+      await api.delete(`/admin/subjects/${id}`);
+      setDeleteConfirm(null);
+      setDeleteError(null);
+      loadSubjects();
+      loadStats();
+    } catch (err) {
+      setDeleteConfirm(null);
+      setDeleteError(err.response?.data?.error || 'O\'chirishda xatolik yuz berdi');
+    }
   };
 
   const CORRECT_LABELS = ['A', 'B', 'C', 'D'];
@@ -364,9 +372,15 @@ export default function AdminPage() {
         )}
 
       {/* SUBJECTS */}
-      {tab === 'subjects' && (
-        <>
-          {subjects.length === 0 ? (
+        {tab === 'subjects' && (
+          <>
+            {deleteError && (
+              <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+                {deleteError}
+                <button onClick={() => setDeleteError(null)} style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>✕</button>
+              </div>
+            )}
+            {subjects.length === 0 ? (
             <div className="empty-state">
               <div style={{ fontSize: '3rem' }}>📚</div>
               <p>Hali mavzular yo'q. Test qo'shing yoki Excel yuklang.</p>

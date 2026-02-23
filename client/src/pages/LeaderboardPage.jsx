@@ -48,7 +48,7 @@ export default function LeaderboardPage() {
 
       <div className="leaderboard-tabs">
         <button className={tab === 'global' ? 'active' : ''} onClick={() => { setTab('global'); setLoading(true); api.get('/leaderboard/global').then(r => { setGlobalList(r.data); setLoading(false); }); }}>
-          Umumiy Top 10
+          Umumiy Reyting
         </button>
         <button className={tab === 'class' ? 'active' : ''} onClick={() => setTab('class')}>
           Sinf bo'yicha

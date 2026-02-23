@@ -115,14 +115,20 @@ export default function QuizPage() {
 
     try {
       const { data } = await api.post('/quiz/submit', {
-        user_id: user.id,
-        subject_id: parseInt(subjectId),
-        answers: answerList
-      });
-      // Update user in localStorage
-      const updatedUser = { ...user, total_tests: (user.total_tests || 0) + 1 };
-      localStorage.setItem('smartquiz_user', JSON.stringify(updatedUser));
-      navigate(`/result/${data.result_id}`, { state: { result: data } });
+          user_id: user.id,
+          subject_id: parseInt(subjectId),
+          answers: answerList
+        });
+        // Fetch fresh user stats from server and update localStorage
+        try {
+          const { data: freshUser } = await api.post('/auth/login', { phone: user.phone });
+          localStorage.setItem('smartquiz_user', JSON.stringify(freshUser.user));
+        } catch {
+          // fallback: manual update
+          const updatedUser = { ...user, total_tests: (user.total_tests || 0) + 1 };
+          localStorage.setItem('smartquiz_user', JSON.stringify(updatedUser));
+        }
+        navigate(`/result/${data.result_id}`, { state: { result: data } });
     } catch {
       navigate('/dashboard');
     }
